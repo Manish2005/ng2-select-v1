@@ -1,0 +1,32 @@
+<div style="width: 300px;  margin-bottom: 20px; display:block !important" [formGroup] ="formGroup" >
+
+  <h3>Select multiple cities</h3>
+
+  <!-- [(ngModel)] = "currentValue" -->
+    <ng-select 
+    [multiple]="true" 
+    [items]="items" 
+    formControlName="currentValue"       
+    idField="data.value"
+    textField="data.value" 
+    [disabled]="disabled"
+    placeholder="No city selected">
+    </ng-select>
+    <br>
+    currentValue : {{formGroup.get("currentValue").value | json }}
+
+    <br><br>
+
+    <!-- <ng-select 
+    [items]="items"
+    [(ngModel)] = "singleCurrentValue"
+    idField="data.value"
+    textField="data.value"
+    placeholder ="No City selected..">
+    </ng-select>
+
+    currentValue : {{ singleCurrentValue | json }} -->
+</div>
+
+
+
