@@ -18,16 +18,15 @@ export class AppComponent {
   constructor(private httpClient: HttpClient, private fb: FormBuilder) { }
 
   ngOnInit() {
-
     this.formGroup = this.fb.group({
       "currentValue": [""]
     });
 
-    this.httpClient.get("http://localhost:10002/ancillary/v1/state")
+    // this.httpClient.get("http://localhost:10002/ancillary/v1/state")
+    this.httpClient.get("https://restcountries.eu/rest/v2/all")
       .subscribe((data: Array<any>) => {
         this.items = data;
       })
-
   }
 
   private value: any = ['Athens'];
@@ -44,11 +43,12 @@ export class AppComponent {
   }
 
   public selected(value: any): void {
-    //debugger;
+    debugger;
     console.log('Selected value is: ', value);
   }
 
   public removed(value: any): void {
+    debugger;
     console.log('Removed value is: ', value);
   }
 
@@ -58,10 +58,9 @@ export class AppComponent {
   }
 
   public itemsToString(value: Array<any> = []): string {
-    // debugger;
-    return value
-      .map((item: any) => {
-        return item.text;
-      }).join(',');
+    debugger;
+    return value.map((item: any) => {
+      return item.text;
+    }).join(',');
   }
 }
