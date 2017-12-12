@@ -19,14 +19,16 @@ export class AppComponent {
 
   ngOnInit() {
     this.formGroup = this.fb.group({
-      "currentValue": [""]
+      "multiValue": [""],
+      "singleValue": ""
     });
 
     // this.httpClient.get("http://localhost:10002/ancillary/v1/state")
     this.httpClient.get("https://restcountries.eu/rest/v2/all")
       .subscribe((data: Array<any>) => {
         this.items = data;
-      })
+        this.formGroup.patchValue({ currentValue: ["AFG", "IND"] });
+      });
   }
 
   private value: any = ['Athens'];

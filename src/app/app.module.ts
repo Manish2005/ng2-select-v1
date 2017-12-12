@@ -7,23 +7,19 @@ import { HttpClientModule } from '@angular/common/http';
 import { HttpModule } from "@angular/http"
 
 import { AppComponent } from './app.component';
-import { SelectComponent } from './select/select';
-import { HighlightPipe } from './select/select-pipes';
-import { OffClickDirective } from './select/off-click';
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { SelectModule } from 'ng5-select';
 
 @NgModule({
   declarations: [
-    AppComponent,
-    SelectComponent,
-    HighlightPipe,
-    OffClickDirective
+    AppComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SelectModule
   ],
   providers: [],
   bootstrap: [AppComponent]
