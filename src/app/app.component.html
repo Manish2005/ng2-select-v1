@@ -6,7 +6,6 @@
     idField="alpha3Code" textField="name" [disabled]="false" placeholder="No city selected">
   </ng-select>
   <br> currentValue : {{formGroup.get("multiValue").value | json }}
-
   <br>
   <br>
 </div>
@@ -14,7 +13,7 @@
 
 <div style="width: 300px;  margin-bottom: 20px; display:block !important" [formGroup]="formGroup">
 
-  <h3>Select multiple cities</h3>
+  <h3>Select Single city</h3>
 
   <ng-select (selected)="selected($event)" (removed)="removed($event)" [items]="items" formControlName="singleValue" idField="alpha3Code"
     textField="name" [disabled]="false" placeholder="No city selected">

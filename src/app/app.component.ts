@@ -10,7 +10,8 @@ import { FormBuilder, FormGroup } from "@angular/forms"
 })
 export class AppComponent {
 
-  items: Array<any> = new Array<any>();
+  items: any[] = [];
+  //items: Array<any> = new Array<any>();
   // currentValue: any = [];
   singleCurrentValue: string = "";
   formGroup: FormGroup;

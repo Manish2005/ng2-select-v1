@@ -1,19 +1,21 @@
 <div tabindex="0" *ngIf="multiple === false" (keyup)="mainClick($event)" [offClick]="clickedOutside" class="ui-select-container dropdown open">
   <div [ngClass]="{'ui-disabled': disabled}"></div>
   <div class="ui-select-match" *ngIf="!inputMode">
-    <span tabindex="-1" class="btn btn-default btn-secondary form-control ui-select-toggle" (click)="matchClick($event)" style="outline: 0;">
+    <span tabindex="-1" class="form-control single-select-field ui-select-toggle" (click)="matchClick($event)" style="outline: 0;">
       <span *ngIf="!active.length" class="ui-select-placeholder text-muted">{{placeholder}}</span>
-      <span *ngIf="active.length" class="ui-select-match-text pull-left" [ngClass]="{'ui-select-allow-clear': allowClear && active.length > 0}"
-        [innerHTML]="sanitize(active[0].text)"></span>
-      <i class="dropdown-toggle pull-right"></i>
-      <i class="caret pull-right"></i>
-      <a *ngIf="allowClear && active.length>0" class="btn btn-xs btn-link pull-right" style="margin-right: 10px; padding: 0;" (click)="removeClick(active[0], $event)">
+    <span *ngIf="active.length" class="ui-select-match-text pull-left" [ngClass]="{'ui-select-allow-clear': allowClear && active.length}"
+      [innerHTML]="sanitize(active[0].text)"></span>
+    <i class="dropdown-toggle float-right"></i>
+    <i class="caret float-right"></i>
+    <a *ngIf="allowClear && active.length>0" class="btn btn-sm btn-link float-right" style="margin-right: 10px; padding: 0;" (click)="removeClick(active[0], $event)">
         <i class="glyphicon glyphicon-remove"></i>
       </a>
     </span>
   </div>
   <input type="text" autocomplete="false" tabindex="-1" (keydown)="inputEvent($event)" (keyup)="inputEvent($event, true)" [disabled]="disabled"
-    class="form-control ui-select-search" *ngIf="inputMode" placeholder="{{active.length <= 0 ? placeholder : ''}}">
+    class="form-control ui-select-search" *ngIf="inputMode" placeholder="{{active.length <= 0 ? placeholder : ''}}"
+    (click)="matchClick($event)" [(ngModel)]="inputValue" autocorrect="off" autocapitalize="off" spellcheck="false" role="combobox"
+    >
   <!-- options template -->
   <ul *ngIf="optionsOpened && options && options.length > 0 && !firstItemHasChildren" class="ui-select-choices dropdown-menu"
     role="menu">
@@ -47,12 +49,12 @@
   <div [ngClass]="{'ui-disabled': disabled}"></div>
   <span class="ui-select-match">
     <span *ngFor="let a of active;let i=index;">
-      <span *ngIf="i<3" class="ui-select-match-item btn btn-default btn-secondary btn-xs" tabindex="-1" type="button" [ngClass]="{'btn-default': true}">
+      <span *ngIf="i<3" class="ui-select-match-item btn btn-default btn-sm" tabindex="-1" type="button" [ngClass]="{'btn-default': true}">
         <a class="close" style="margin-left: 5px; padding: 0;" (click)="removeClick(a, $event)">&times;</a>
         <span [innerHtml]="sanitize(a.text)"></span>
-      </span>
-    </span>
-    <span *ngIf="active.length > 3"> +{{active.length-3}}</span>
+  </span>
+  </span>
+  <span *ngIf="active.length > 3"> +{{active.length-3}}</span>
   </span>
 
   <!-- Filter field -->

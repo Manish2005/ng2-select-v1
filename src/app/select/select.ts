@@ -78,7 +78,6 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   public element: ElementRef;
 
   ngOnChanges(changes: SimpleChanges): void {
-    debugger;
     if (changes.items) {
       let value: any = changes.items.currentValue;
 
@@ -111,8 +110,8 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
 
   resolvePath(path, obj) {
     return path.split('.').reduce(function (prev, curr) {
-      return prev ? prev[curr] : undefined
-    }, obj || self)
+      return prev ? prev[curr] : undefined;
+    }, obj || self);
   }
 
   private set optionsOpened(value: boolean) {
@@ -229,7 +228,6 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   public remove(item: SelectItem): void {
-    debugger;
     if (this._disabled === true) {
       return;
     }
@@ -247,7 +245,6 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   public doEvent(type: string, value: any): void {
-    debugger;
     if ((this as any)[type] && value) {
       (this as any)[type].next(value.id);
     }
@@ -273,7 +270,6 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   public writeValue(val: any): void {
-    debugger;
     this.active = val;
     if (this.multiple) {
       this.data.emit(this.active);
@@ -329,7 +325,6 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
 
   // Highlight option which has focus in the list
   protected selectActive(value: SelectItem): void {
-    // debugger;
     this.activeOption = value;
   }
 
@@ -355,7 +350,6 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   private open(): void {
-    // debugger;
     this.options = this.itemObjects;
     /* this.options = this.itemObjects.filter((option: SelectItem) => {
       return !this.multiple || (this.multiple && !this.active.find((o: SelectItem) => option.text === o.text));
@@ -373,12 +367,11 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   private selectActiveMatch(): void {
-    debugger;
     this.selectMatch(this.activeOption);
   }
 
   private selectMatch(value: SelectItem, e: Event = void 0): void {
-    debugger;
+
     if (e) {
       e.stopPropagation();
       e.preventDefault();
