@@ -19,16 +19,37 @@ import { ChildrenBehavior, GenericBehavior } from './behavior';
 })
 export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges {
 
-  @Input() public allowClear: boolean = false;
-  @Input() public placeholder: string = '';
+  @Output() public data: EventEmitter<any> = new EventEmitter();
+  @Output() public selected: EventEmitter<any> = new EventEmitter();
+  @Output() public removed: EventEmitter<any> = new EventEmitter();
+  @Output() public typed: EventEmitter<any> = new EventEmitter();
+  @Output() public opened: EventEmitter<any> = new EventEmitter();
+
+  public options: Array<SelectItem> = [];
+  public itemObjects: Array<SelectItem> = [];
+  public activeOption: SelectItem;
+  public element: ElementRef;
+
+  protected onChange: any = Function.prototype;
+  protected onTouched: any = Function.prototype;
+
+  public inputMode = false;
+  private _optionsOpened = false;
+  private behavior: OptionsBehavior;
+  public inputValue = '';
+  private _disabled = false;
+  private _active: Array<SelectItem> = [];
+
+  @Input() public allowClear = false;
+  @Input() public placeholder = '';
   @Input() public idField: string;
   @Input() public textField: string;
-  @Input() public childrenField: string = 'children';
-  @Input() public multiple: boolean = false;
+  @Input() public childrenField = 'children';
+  @Input() public multiple = false;
   @Input('items') items: any;
 
-  @Input("ngModel") ngModel: any;
-  @Input("ngModelChange") ngModelChange = new EventEmitter<any>();
+  @Input('ngModel') ngModel: any;
+  @Input('ngModelChange') ngModelChange = new EventEmitter<any>();
 
   @Input()
   public set disabled(value: boolean) {
@@ -44,68 +65,61 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
 
   @Input()
   public set active(selectedItems: any) {
-    if (typeof selectedItems === 'string' && selectedItems.length) {
+    if ((typeof selectedItems === 'string' && selectedItems.length) ||
+      (selectedItems && typeof selectedItems === 'object' && !Array.isArray(selectedItems) && Object.keys(selectedItems).length)) {
       selectedItems = [selectedItems];
     }
     if (!selectedItems || selectedItems.length === 0) {
       this._active = [];
     } else {
-      this._active = selectedItems.map((item: any) => {
-        let data;
-        if (typeof item === 'string') {
-          const exists = this.itemObjects.find((obj) => obj.id == item);
-          data = exists || item;
-        } else {
-          data = {
-            id: this.resolvePath(this.idField, item),
-            text: this.resolvePath(this.textField, item)
-          };
-        }
-        return new SelectItem(data);
-      });
+      this._active = selectedItems;
     }
-  }
-
-  @Output() public data: EventEmitter<any> = new EventEmitter();
-  @Output() public selected: EventEmitter<any> = new EventEmitter();
-  @Output() public removed: EventEmitter<any> = new EventEmitter();
-  @Output() public typed: EventEmitter<any> = new EventEmitter();
-  @Output() public opened: EventEmitter<any> = new EventEmitter();
-
-  public options: Array<SelectItem> = [];
-  public itemObjects: Array<SelectItem> = [];
-  public activeOption: SelectItem;
-  public element: ElementRef;
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.items) {
-      let value: any = changes.items.currentValue;
-
-      if (!value) {
-        this._items = this.itemObjects = [];
-      } else {
-        this._items = value.filter((item: any) => {
-          if ((typeof item === 'string') || (typeof item === 'object' && item && this.resolvePath(this.textField, item) && this.resolvePath(this.idField, item))) {
-            return item;
-          }
-        });
-        this.itemObjects = this._items.map((item: any) => (typeof item === 'string' ? new SelectItem(item) : new SelectItem({ id: this.resolvePath(this.idField, item), text: this.resolvePath(this.textField, item), children: item[this.childrenField] })));
-
-        this._active = this._active.map((item: any) => {
-          let data;
-          if (this.idField != this.textField && item.id == item.text) {
-            const exists = this.itemObjects.find((obj) => obj.id === item.id);
-            data = exists || item;
-          }
-          return new SelectItem(data);
-        });
-
-      }
-    }
+    console.info('Inside set active:');
+    console.log(this._active);
   }
 
   public get active(): any {
     return this._active;
+  }
+
+  public set optionsOpened(value: boolean) {
+    this._optionsOpened = value;
+    this.opened.emit(value);
+  }
+
+  public get optionsOpened(): boolean {
+    return this._optionsOpened;
+  }
+
+  public constructor(element: ElementRef, private sanitizer: DomSanitizer) {
+    this.element = element;
+    this.clickedOutside = this.clickedOutside.bind(this);
+  }
+
+  public ngOnInit(): any {
+    this.behavior = (this.firstItemHasChildren) ?
+      new ChildrenBehavior(this) : new GenericBehavior(this);
+
+    this.ngModelChange.emit(this.ngModel);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.items) {
+      const items: any = changes.items.currentValue;
+      this.options = [];
+      if (items && items.length) {
+        items.forEach(item => {
+          if ((typeof item === 'string') || (typeof item === 'object' && item && this.resolvePath(this.textField, item) &&
+            this.resolvePath(this.idField, item))) {
+            const newRec = {
+              id: this.resolvePath(this.idField, item),
+              text: this.resolvePath(this.textField, item)
+            };
+            this.options.push(new SelectItem(newRec));
+          }
+        });
+      }
+    }
   }
 
   resolvePath(path, obj) {
@@ -114,34 +128,8 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
     }, obj || self);
   }
 
-  private set optionsOpened(value: boolean) {
-
-    this._optionsOpened = value;
-    this.opened.emit(value);
-  }
-
-  private get optionsOpened(): boolean {
-    return this._optionsOpened;
-  }
-
-  protected onChange: any = Function.prototype;
-  protected onTouched: any = Function.prototype;
-
-  private inputMode: boolean = false;
-  private _optionsOpened: boolean = false;
-  private behavior: OptionsBehavior;
-  private inputValue: string = '';
-  private _items: Array<any> = [];
-  private _disabled: boolean = false;
-  private _active: Array<SelectItem> = [];
-
-  public constructor(element: ElementRef, private sanitizer: DomSanitizer) {
-    this.element = element;
-    this.clickedOutside = this.clickedOutside.bind(this);
-  }
-
   public sanitize(html: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(html);
+    return this.sanitizer.bypassSecurityTrustHtml(html) || '';
   }
 
   public inputEvent(e: any, isUpMode: boolean = false): void {
@@ -156,8 +144,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
     }
     // backspace
     if (!isUpMode && e.keyCode === 8) {
-      let el: any = this.element.nativeElement
-        .querySelector('div.ui-select-container > input');
+      const el: any = this.element.nativeElement.querySelector('div.ui-select-container > input');
       if (!el.value || el.value.length <= 0) {
         if (this.active.length > 0) {
           this.remove(this.active[this.active.length - 1]);
@@ -180,13 +167,13 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
       e.preventDefault();
     }
     // left
-    if (!isUpMode && e.keyCode === 37 && this._items.length > 0) {
+    if (!isUpMode && e.keyCode === 37 && this.options.length) {
       this.behavior.first();
       e.preventDefault();
       return;
     }
     // right
-    if (!isUpMode && e.keyCode === 39 && this._items.length > 0) {
+    if (!isUpMode && e.keyCode === 39 && this.options.length) {
       this.behavior.last();
       e.preventDefault();
       return;
@@ -220,26 +207,19 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
     }
   }
 
-  public ngOnInit(): any {
-    this.behavior = (this.firstItemHasChildren) ?
-      new ChildrenBehavior(this) : new GenericBehavior(this);
-
-    this.ngModelChange.emit(this.ngModel);
-  }
-
   public remove(item: SelectItem): void {
     if (this._disabled === true) {
       return;
     }
     if (this.multiple === true && this.active) {
-      let index = this.active.indexOf(item);
+      const index = this.active.indexOf(item);
       this.active.splice(index, 1);
       this.data.next(this.active);
       this.doEvent('removed', item);
     }
     if (this.multiple === false) {
       this.active = [];
-      this.data.next(this.active[0].id);
+      this.data.next(this.active[0]);
       this.doEvent('removed', item);
     }
   }
@@ -252,9 +232,9 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
     if (type === 'selected' || type === 'removed') {
       let val;
       if (this.multiple) {
-        val = this.active.map((rec) => rec.id);
+        val = this.active;
       } else {
-        val = this.active.length ? this.active[0].id : '';
+        val = this.active.length ? this.active[0] : '';
       }
       this.onChange(val);
     }
@@ -266,7 +246,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   public get firstItemHasChildren(): boolean {
-    return this.itemObjects[0] && this.itemObjects[0].hasChildren();
+    return this.options[0] && this.options[0].hasChildren();
   }
 
   public writeValue(val: any): void {
@@ -274,8 +254,10 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
     if (this.multiple) {
       this.data.emit(this.active);
     } else {
-      this.data.next(this.active.length ? this.active[0].id : '');
+      this.data.next(this.active.length ? this.active[0] : '');
     }
+    console.log('Inside writeValue:');
+    console.log(this.active);
   }
 
   public registerOnChange(fn: (_: any) => {}): void { this.onChange = fn; }
@@ -313,12 +295,12 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
       return;
     }
     this.inputMode = true;
-    let value = String
+    const value = String
       .fromCharCode(96 <= event.keyCode && event.keyCode <= 105 ? event.keyCode - 48 : event.keyCode)
       .toLowerCase();
     this.focusToInput(value);
     this.open();
-    let target = event.target || event.srcElement;
+    const target = event.target || event.srcElement;
     target.value = value;
     this.inputEvent(event);
   }
@@ -330,8 +312,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
 
   // TODO: Try to refactor, too heavy
   protected isActive(value: SelectItem): boolean {
-    return this.active.find((item) => item.id == value.id);
-    // return this.activeOption.id === value.id;
+    return this.active.find((item) => item == value.id);
   }
 
   protected removeClick(value: SelectItem, event: any): void {
@@ -341,7 +322,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
 
   private focusToInput(value: string = ''): void {
     setTimeout(() => {
-      let el = this.element.nativeElement.querySelector('div.ui-select-container > input');
+      const el = this.element.nativeElement.querySelector('div.ui-select-container > input');
       if (el) {
         el.focus();
         this.inputValue = value;
@@ -350,12 +331,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   private open(): void {
-    this.options = this.itemObjects;
-    /* this.options = this.itemObjects.filter((option: SelectItem) => {
-      return !this.multiple || (this.multiple && !this.active.find((o: SelectItem) => option.text === o.text));
-    }); */
-
-    if (this.options.length > 0) {
+    if (this.options.length) {
       this.behavior.first();
     }
     this.optionsOpened = true;
@@ -371,37 +347,43 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   private selectMatch(value: SelectItem, e: Event = void 0): void {
-
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
-    if (this.options.length <= 0) {
+    if (!this.options.length) {
       return;
     }
     if (this.multiple === true) {
-      const exists = this.active.findIndex((item) => item.id == value.id);
+      const exists = this.active.findIndex((item) => item == value.id);
       if (exists !== -1) {
         this.active.splice(exists, 1);
       } else {
-        this.active.push(value);
+        this.active.push(value.id);
       }
       this.data.emit(this.active);
       // this.open();
     } else {
       this.active = [];
-      this.active.push(value);
-      this.data.next(this.active[0].id);
+      this.active.push(value.id);
+      this.data.next(this.active[0]);
       this.hideOptions();
     }
     this.doEvent('selected', value);
     if (this.multiple === true) {
       this.focusToInput('');
-      this.options = this.itemObjects;
     } else {
       this.focusToInput(stripTags(value.text));
       this.element.nativeElement.querySelector('.ui-select-container').focus();
     }
+  }
+
+  getText(selected) {
+    const match = this.options.find((item) => {
+      return JSON.stringify(item.id) === JSON.stringify(selected);
+    });
+
+    return match ? match.text : '';
   }
 }
 
