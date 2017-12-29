@@ -61,7 +61,7 @@
 
   <!-- Filter field -->
   <input type="text" (keydown)="inputEvent($event)" (keyup)="inputEvent($event, true)" (click)="matchClick($event)" [disabled]="disabled"
-    autocomplete="false" [(ngModel)]="inputValue" autocorrect="off" autocapitalize="off" spellcheck="false" class="ui-select-search"
+    autocomplete="false" [(ngModel)]="inputValue" autocorrect="off" autocapitalize="off" spellcheck="false" class="form-control ui-select-search"
     placeholder="{{active.length <= 0 ? placeholder : ''}}" role="combobox">
 
   <!-- options template -->

@@ -74,8 +74,6 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
     } else {
       this._active = selectedItems;
     }
-    console.info('Inside set active:');
-    console.log(this._active);
   }
 
   public get active(): any {
@@ -256,8 +254,6 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
     } else {
       this.data.next(this.active.length ? this.active[0] : '');
     }
-    console.log('Inside writeValue:');
-    console.log(this.active);
   }
 
   public registerOnChange(fn: (_: any) => {}): void { this.onChange = fn; }
