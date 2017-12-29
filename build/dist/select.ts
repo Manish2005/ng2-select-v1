@@ -26,7 +26,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   @Output() public opened: EventEmitter<any> = new EventEmitter();
 
   public options: Array<SelectItem> = [];
-  public itemObjects: Array<SelectItem> = [];
+  public _options: Array<SelectItem> = [];
   public activeOption: SelectItem;
   public element: ElementRef;
 
@@ -104,7 +104,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.items) {
       const items: any = changes.items.currentValue;
-      this.options = [];
+      this._options = this.options = [];
       if (items && items.length) {
         items.forEach(item => {
           if ((typeof item === 'string') || (typeof item === 'object' && item && this.resolvePath(this.textField, item) &&
@@ -241,6 +241,8 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   public clickedOutside(): void {
     this.inputMode = false;
     this.optionsOpened = false;
+    this.inputValue = '';
+    this.options = this._options;
   }
 
   public get firstItemHasChildren(): boolean {
@@ -365,6 +367,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
       this.data.next(this.active[0]);
       this.hideOptions();
     }
+    this.options = this._options;
     this.doEvent('selected', value);
     if (this.multiple === true) {
       this.focusToInput('');
@@ -375,7 +378,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   getText(selected) {
-    const match = this.options.find((item) => {
+    const match = this._options.find((item) => {
       return JSON.stringify(item.id) === JSON.stringify(selected);
     });
 

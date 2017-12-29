@@ -16,10 +16,9 @@ export class Behavior {
   public fillOptionsMap(): void {
     this.optionsMap.clear();
     let startPos = 0;
-    this.actor.itemObjects
-      .map((item: SelectItem) => {
-        startPos = item.fillChildrenHash(this.optionsMap, startPos);
-      });
+    this.actor.options.map((item: SelectItem) => {
+      startPos = item.fillChildrenHash(this.optionsMap, startPos);
+    });
   }
 
   public ensureHighlightVisible(optionsMap: Map<string, number> = void 0): void {
@@ -87,12 +86,12 @@ export class GenericBehavior extends Behavior implements OptionsBehavior {
   }
 
   public filter(query: RegExp): void {
-    let options = this.actor.itemObjects
-      .filter((option: SelectItem) => {
-        return stripTags(option.text).match(query) &&
-          (this.actor.multiple === false ||
-            (this.actor.multiple === true && this.actor.active.map((item: SelectItem) => item.id).indexOf(option.id) < 0));
-      });
+    debugger;
+    let options = this.actor._options.filter((option: SelectItem) => {
+      return stripTags(option.text).match(query) &&
+        (this.actor.multiple === false ||
+          (this.actor.multiple === true && this.actor.active.map((item: SelectItem) => item.id).indexOf(option.id) < 0));
+    });
     this.actor.options = options;
     if (this.actor.options.length > 0) {
       this.actor.activeOption = this.actor.options[0];
@@ -163,7 +162,7 @@ export class ChildrenBehavior extends Behavior implements OptionsBehavior {
     let options: Array<SelectItem> = [];
     let optionsMap: Map<string, number> = new Map<string, number>();
     let startPos = 0;
-    for (let si of this.actor.itemObjects) {
+    for (let si of this.actor._options) {
       let children: Array<SelectItem> = si.children.filter((option: SelectItem) => query.test(option.text));
       startPos = si.fillChildrenHash(optionsMap, startPos);
       if (children.length > 0) {
@@ -173,8 +172,8 @@ export class ChildrenBehavior extends Behavior implements OptionsBehavior {
       }
     }
     this.actor.options = options;
-    if (this.actor.options.length > 0) {
-      this.actor.activeOption = this.actor.options[0].children[0];
+    if (this.actor._options.length > 0) {
+      this.actor.activeOption = this.actor._options[0].children[0];
       super.ensureHighlightVisible(optionsMap);
     }
   }
