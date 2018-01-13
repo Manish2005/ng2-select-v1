@@ -1,6 +1,8 @@
 import { Component, Input, Output, EventEmitter, ElementRef, OnInit, forwardRef, OnChanges, SimpleChanges } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import * as _ from 'lodash';
+
 import { SelectItem } from './select-item';
 import { stripTags } from './select-pipes';
 import { OptionsBehavior } from './select-interfaces';
@@ -29,6 +31,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   public _options: Array<SelectItem> = [];
   public activeOption: SelectItem;
   public element: ElementRef;
+  public selectedActiveItems: Array<SelectItem> = [];
 
   protected onChange: any = Function.prototype;
   protected onTouched: any = Function.prototype;
@@ -102,28 +105,31 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+
     if (changes.items) {
       const items: any = changes.items.currentValue;
       this._options = this.options = [];
+
       if (items && items.length) {
         items.forEach(item => {
-          if ((typeof item === 'string') || (typeof item === 'object' && item && this.resolvePath(this.textField, item) &&
-            this.resolvePath(this.idField, item))) {
+          if ((typeof item === 'string') || (typeof item === 'object' && item &&
+            _.get(item, this.textField) &&
+            _.get(item, this.idField))) {
             const newRec = {
-              id: this.resolvePath(this.idField, item),
-              text: this.resolvePath(this.textField, item)
+              id: _.get(item, this.idField),
+              text: _.get(item, this.textField)
             };
             this.options.push(new SelectItem(newRec));
           }
         });
       }
-    }
-  }
 
-  resolvePath(path, obj) {
-    return path.split('.').reduce(function (prev, curr) {
-      return prev ? prev[curr] : undefined;
-    }, obj || self);
+      _.each(this.selectedActiveItems, (row) => {
+        if (!_.includes(this.options, r => r.id === row.id)) {
+          this.options.push(_.cloneDeep(row));
+        }
+      });
+    }
   }
 
   public sanitize(html: string): SafeHtml {
@@ -131,6 +137,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   public inputEvent(e: any, isUpMode: boolean = false): void {
+
     // tab
     if (e.keyCode === 9) {
       return;
@@ -198,6 +205,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
       return;
     }
     if (this.inputValue) {
+
       this.behavior.filter(new RegExp(escapeRegexp(this.inputValue), 'ig'));
       this.doEvent('typed', this.inputValue);
     } else {
@@ -206,12 +214,17 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   public remove(item: SelectItem): void {
+
     if (this._disabled === true) {
       return;
     }
     if (this.multiple === true && this.active) {
       const index = this.active.indexOf(item);
       this.active.splice(index, 1);
+
+      const _index = this.selectedActiveItems.indexOf(item);
+      this.selectedActiveItems.splice(_index, 1);
+
       this.data.next(this.active);
       this.doEvent('removed', item);
     }
@@ -223,8 +236,14 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   public doEvent(type: string, value: any): void {
+
     if ((this as any)[type] && value) {
-      (this as any)[type].next(value.id);
+      if (value.id) {
+        (this as any)[type].next(value.id);
+      } else {
+        (this as any)[type].next(value);
+      }
+
     }
     this.onTouched();
     if (type === 'selected' || type === 'removed') {
@@ -345,6 +364,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   private selectMatch(value: SelectItem, e: Event = void 0): void {
+
     if (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -356,8 +376,10 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
       const exists = this.active.findIndex((item) => item == value.id);
       if (exists !== -1) {
         this.active.splice(exists, 1);
+        this.selectedActiveItems.splice(exists, 1);
       } else {
         this.active.push(value.id);
+        this.selectedActiveItems.push(value);
       }
       this.data.emit(this.active);
       // this.open();
@@ -378,6 +400,7 @@ export class SelectComponent implements OnInit, ControlValueAccessor, OnChanges 
   }
 
   getText(selected) {
+
     const match = this._options.find((item) => {
       return JSON.stringify(item.id) === JSON.stringify(selected);
     });

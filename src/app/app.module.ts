@@ -8,8 +8,8 @@ import { HttpModule } from "@angular/http"
 
 import { AppComponent } from './app.component';
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { SelectModule } from 'ng5-select';
-// import { SelectModule } from './select/select.module';
+// import { SelectModule } from 'ng5-select';
+import { SelectModule } from './select/select.module';
 
 @NgModule({
   declarations: [

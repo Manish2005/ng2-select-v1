@@ -23,12 +23,21 @@ export class AppComponent {
       "multiValue": [""],
       "singleValue": ""
     });
+    this.getRows();
+  }
 
-    // this.httpClient.get("http://localhost:10002/ancillary/v1/state")
-    this.httpClient.get("https://restcountries.eu/rest/v2/all")
+  getRows(filter: string = "") {
+    //debugger;
+
+    if (filter === "") {
+      filter = "nor";
+    }
+
+    this.httpClient.get("https://restcountries.eu/rest/v2/name/" + filter)
       .subscribe((data: Array<any>) => {
+        // debugger;
         this.items = data;
-        this.formGroup.patchValue({ currentValue: ["AFG", "IND"] });
+        // this.formGroup.patchValue({ currentValue: ["AFG", "IND"] });
       });
   }
 
@@ -58,6 +67,11 @@ export class AppComponent {
   public refreshValue(value: any): void {
     debugger;
     this.value = value;
+  }
+
+  public typed(value: any): void {
+    debugger;
+    console.log('New search input: ', value);
   }
 
   public itemsToString(value: Array<any> = []): string {

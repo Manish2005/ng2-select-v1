@@ -3,7 +3,7 @@
   <h3>Select multiple cities</h3>
 
   <ng-select [multiple]="true" (selected)="selected($event)" (removed)="removed($event)" [items]="items" formControlName="multiValue"
-    idField="alpha3Code" textField="name" [disabled]="false" placeholder="No city selected">
+    idField="alpha3Code" textField="name" [disabled]="false" placeholder="No city selected" (typed)="getRows($event)">
   </ng-select>
   <br> currentValue : {{formGroup.get("multiValue").value | json }}
   <br>
@@ -16,7 +16,7 @@
   <h3>Select Single city</h3>
 
   <ng-select (selected)="selected($event)" (removed)="removed($event)" [items]="items" formControlName="singleValue" idField="alpha3Code"
-    textField="name" [disabled]="false" placeholder="No city selected">
+    textField="name" [disabled]="false" placeholder="No city selected" (typed)="getRows($event)">
   </ng-select>
   <br> currentValue : {{formGroup.get("singleValue").value | json }}
 
